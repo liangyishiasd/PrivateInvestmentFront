@@ -1,220 +1,240 @@
 <template>
-  <page-header-wrapper>
-    <a-card :bordered="false">
-      <a-row>
-        <a-col :sm="8" :xs="24">
-          <info title="我的待办" value="8个任务" :bordered="true" />
-        </a-col>
-        <a-col :sm="8" :xs="24">
-          <info title="本周任务平均处理时间" value="32分钟" :bordered="true" />
-        </a-col>
-        <a-col :sm="8" :xs="24">
-          <info title="本周完成任务数" value="24个" />
-        </a-col>
-      </a-row>
-    </a-card>
+  <div>
+    <div class="table-page-search-wrapper">
+      <a-form layout="inline">
+        <a-row :gutter="48">
+          <a-col :md="8" :sm="24">
+            <a-form-item label="规则编号">
+              <a-input v-model="queryParam.id" placeholder=""/>
+            </a-form-item>
+          </a-col>
+          <a-col :md="8" :sm="24">
+            <a-form-item label="使用状态">
+              <a-select v-model="queryParam.status" placeholder="请选择" default-value="0">
+                <a-select-option value="0">全部</a-select-option>
+                <a-select-option value="1">关闭</a-select-option>
+                <a-select-option value="2">运行中</a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <template v-if="advanced">
+            <a-col :md="8" :sm="24">
+              <a-form-item label="调用次数">
+                <a-input-number v-model="queryParam.callNo" style="width: 100%"/>
+              </a-form-item>
+            </a-col>
+            <a-col :md="8" :sm="24">
+              <a-form-item label="更新日期">
+                <a-date-picker v-model="queryParam.date" style="width: 100%" placeholder="请输入更新日期"/>
+              </a-form-item>
+            </a-col>
+            <a-col :md="8" :sm="24">
+              <a-form-item label="使用状态">
+                <a-select v-model="queryParam.useStatus" placeholder="请选择" default-value="0">
+                  <a-select-option value="0">全部</a-select-option>
+                  <a-select-option value="1">关闭</a-select-option>
+                  <a-select-option value="2">运行中</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :md="8" :sm="24">
+              <a-form-item label="使用状态">
+                <a-select placeholder="请选择" default-value="0">
+                  <a-select-option value="0">全部</a-select-option>
+                  <a-select-option value="1">关闭</a-select-option>
+                  <a-select-option value="2">运行中</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+          </template>
+          <a-col :md="!advanced && 8 || 24" :sm="24">
+            <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
+              <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
+              <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+              <a @click="toggleAdvanced" style="margin-left: 8px">
+                {{ advanced ? '收起' : '展开' }}
+                <a-icon :type="advanced ? 'up' : 'down'"/>
+              </a>
+            </span>
+          </a-col>
+        </a-row>
+      </a-form>
+    </div>
 
-    <a-card
-      style="margin-top: 24px"
-      :bordered="false"
-      title="标准列表">
+    <div class="table-operator">
+      <a-button type="primary" icon="plus" @click="handleEdit()">新建</a-button>
+      <a-button type="dashed" @click="tableOption">{{ optionAlertShow && '关闭' || '开启' }} alert</a-button>
+      <a-dropdown v-action:edit v-if="selectedRowKeys.length > 0">
+        <a-menu slot="overlay">
+          <a-menu-item key="1"><a-icon type="delete" />删除</a-menu-item>
+          <!-- lock | unlock -->
+          <a-menu-item key="2"><a-icon type="lock" />锁定</a-menu-item>
+        </a-menu>
+        <a-button style="margin-left: 8px">
+          批量操作 <a-icon type="down" />
+        </a-button>
+      </a-dropdown>
+    </div>
 
-      <div slot="extra">
-        <a-radio-group v-model="status">
-          <a-radio-button value="all">全部</a-radio-button>
-          <a-radio-button value="processing">进行中</a-radio-button>
-          <a-radio-button value="waiting">等待中</a-radio-button>
-        </a-radio-group>
-        <a-input-search style="margin-left: 16px; width: 272px;" />
-      </div>
-
-      <div class="operate">
-        <a-button type="dashed" style="width: 100%" icon="plus" @click="add">添加</a-button>
-      </div>
-
-      <a-list size="large" :pagination="{showSizeChanger: true, showQuickJumper: true, pageSize: 5, total: 50}">
-        <a-list-item :key="index" v-for="(item, index) in data">
-          <a-list-item-meta :description="item.description">
-            <a-avatar slot="avatar" size="large" shape="square" :src="item.avatar"/>
-            <a slot="title">{{ item.title }}</a>
-          </a-list-item-meta>
-          <div slot="actions">
-            <a @click="edit(item)">编辑</a>
-          </div>
-          <div slot="actions">
-            <a-dropdown>
-              <a-menu slot="overlay">
-                <a-menu-item><a>编辑</a></a-menu-item>
-                <a-menu-item><a>删除</a></a-menu-item>
-              </a-menu>
-              <a>更多<a-icon type="down"/></a>
-            </a-dropdown>
-          </div>
-          <div class="list-content">
-            <div class="list-content-item">
-              <span>Owner</span>
-              <p>{{ item.owner }}</p>
-            </div>
-            <div class="list-content-item">
-              <span>开始时间</span>
-              <p>{{ item.startAt }}</p>
-            </div>
-            <div class="list-content-item">
-              <a-progress :percent="item.progress.value" :status="!item.progress.status ? null : item.progress.status" style="width: 180px" />
-            </div>
-          </div>
-        </a-list-item>
-      </a-list>
-    </a-card>
-  </page-header-wrapper>
+    <s-table
+      ref="table"
+      size="default"
+      rowKey="key"
+      :columns="columns"
+      :data="loadData"
+      :alert="options.alert"
+      :rowSelection="options.rowSelection"
+    >
+      <span slot="serial" slot-scope="text, record, index">
+        {{ index + 1 }}
+      </span>
+      <span slot="action" slot-scope="text, record">
+        <template>
+          <a @click="handleEdit(record)">编辑</a>
+          <a-divider type="vertical" />
+        </template>
+        <a-dropdown>
+          <a class="ant-dropdown-link">
+            更多 <a-icon type="down" />
+          </a>
+          <a-menu slot="overlay">
+            <a-menu-item>
+              <a href="javascript:;">详情</a>
+            </a-menu-item>
+            <a-menu-item v-if="$auth('table.disable')">
+              <a href="javascript:;">禁用</a>
+            </a-menu-item>
+            <a-menu-item v-if="$auth('table.delete')">
+              <a href="javascript:;">删除</a>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+      </span>
+    </s-table>
+  </div>
 </template>
 
 <script>
-// 演示如何使用 this.$dialog 封装 modal 组件
-import TaskForm from '../modules/TaskForm'
-import Info from '../components/Info'
-
-const data = []
-data.push({
-  title: 'Alipay',
-  avatar: 'https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
-  description: '那是一种内在的东西， 他们到达不了，也无法触及的',
-  owner: '付晓晓',
-  startAt: '2018-07-26 22:44',
-  progress: {
-    value: 90
-  }
-})
-data.push({
-  title: 'Angular',
-  avatar: 'https://gw.alipayobjects.com/zos/rmsportal/zOsKZmFRdUtvpqCImOVY.png',
-  description: '希望是一个好东西，也许是最好的，好东西是不会消亡的',
-  owner: '曲丽丽',
-  startAt: '2018-07-26 22:44',
-  progress: {
-    value: 54
-  }
-})
-data.push({
-  title: 'Ant Design',
-  avatar: 'https://gw.alipayobjects.com/zos/rmsportal/dURIMkkrRFpPgTuzkwnB.png',
-  description: '生命就像一盒巧克力，结果往往出人意料',
-  owner: '林东东',
-  startAt: '2018-07-26 22:44',
-  progress: {
-    value: 66
-  }
-})
-data.push({
-  title: 'Ant Design Pro',
-  avatar: 'https://gw.alipayobjects.com/zos/rmsportal/sfjbOqnsXXJgNCjCzDBL.png',
-  description: '城镇中有那么多的酒馆，她却偏偏走进了我的酒馆',
-  owner: '周星星',
-  startAt: '2018-07-26 22:44',
-  progress: {
-    value: 30
-  }
-})
-data.push({
-  title: 'Bootstrap',
-  avatar: 'https://gw.alipayobjects.com/zos/rmsportal/siCrBXXhmvTQGWPNLBow.png',
-  description: '那时候我只会想自己想要什么，从不想自己拥有什么',
-  owner: '吴加好',
-  startAt: '2018-07-26 22:44',
-  progress: {
-    status: 'exception',
-    value: 100
-  }
-})
+import moment from 'moment'
+import { STable } from '@/components'
+import { getRoleList, getServiceList } from '@/api/manage'
 
 export default {
-  name: 'StandardList',
+  name: 'TableList',
   components: {
-    TaskForm,
-    Info
+    STable
   },
   data () {
     return {
-      data,
-      status: 'all'
-    }
-  },
-  methods: {
-    add () {
-      this.$dialog(TaskForm,
-        // component props
+      mdl: {},
+      // 高级搜索 展开/关闭
+      advanced: false,
+      // 查询参数
+      queryParam: {},
+      // 表头
+      columns: [
         {
-          record: {},
-          on: {
-            ok () {
-              console.log('ok 回调')
-            },
-            cancel () {
-              console.log('cancel 回调')
-            },
-            close () {
-              console.log('modal close 回调')
-            }
-          }
+          title: '#',
+          scopedSlots: { customRender: 'serial' }
         },
-        // modal props
         {
-          title: '新增',
-          width: 700,
-          centered: true,
-          maskClosable: false
-        })
-    },
-    edit (record) {
-      console.log('record', record)
-      this.$dialog(TaskForm,
-        // component props
-        {
-          record,
-          on: {
-            ok () {
-              console.log('ok 回调')
-            },
-            cancel () {
-              console.log('cancel 回调')
-            },
-            close () {
-              console.log('modal close 回调')
-            }
-          }
+          title: '规则编号',
+          dataIndex: 'no'
         },
-        // modal props
+        {
+          title: '描述',
+          dataIndex: 'description'
+        },
+        {
+          title: '服务调用次数',
+          dataIndex: 'callNo',
+          sorter: true,
+          needTotal: true,
+          customRender: (text) => text + ' 次'
+        },
+        {
+          title: '状态',
+          dataIndex: 'status',
+          needTotal: true
+        },
+        {
+          title: '更新时间',
+          dataIndex: 'updatedAt',
+          sorter: true
+        },
         {
           title: '操作',
-          width: 700,
-          centered: true,
-          maskClosable: false
-        })
+          dataIndex: 'action',
+          width: '150px',
+          scopedSlots: { customRender: 'action' }
+        }
+      ],
+      // 加载数据方法 必须为 Promise 对象
+      loadData: parameter => {
+        console.log('loadData.parameter', parameter)
+        return getServiceList(Object.assign(parameter, this.queryParam))
+          .then(res => {
+            return res.result
+          })
+      },
+      selectedRowKeys: [],
+      selectedRows: [],
+
+      // custom table alert & rowSelection
+      options: {
+        alert: { show: true, clear: () => { this.selectedRowKeys = [] } },
+        rowSelection: {
+          selectedRowKeys: this.selectedRowKeys,
+          onChange: this.onSelectChange
+        }
+      },
+      optionAlertShow: false
+    }
+  },
+  created () {
+    this.tableOption()
+    getRoleList({ t: new Date() })
+  },
+  methods: {
+    tableOption () {
+      if (!this.optionAlertShow) {
+        this.options = {
+          alert: { show: true, clear: () => { this.selectedRowKeys = [] } },
+          rowSelection: {
+            selectedRowKeys: this.selectedRowKeys,
+            onChange: this.onSelectChange
+          }
+        }
+        this.optionAlertShow = true
+      } else {
+        this.options = {
+          alert: false,
+          rowSelection: null
+        }
+        this.optionAlertShow = false
+      }
+    },
+
+    handleEdit (record) {
+      this.$emit('onEdit', record)
+    },
+    handleOk () {
+
+    },
+
+    onSelectChange (selectedRowKeys, selectedRows) {
+      this.selectedRowKeys = selectedRowKeys
+      this.selectedRows = selectedRows
+    },
+    toggleAdvanced () {
+      this.advanced = !this.advanced
+    },
+
+    resetSearchForm () {
+      this.queryParam = {
+        date: moment(new Date())
+      }
     }
   }
 }
 </script>
-
-<style lang="less" scoped>
-.ant-avatar-lg {
-    width: 48px;
-    height: 48px;
-    line-height: 48px;
-}
-
-.list-content-item {
-    color: rgba(0, 0, 0, .45);
-    display: inline-block;
-    vertical-align: middle;
-    font-size: 14px;
-    margin-left: 40px;
-    span {
-        line-height: 20px;
-    }
-    p {
-        margin-top: 4px;
-        margin-bottom: 0;
-        line-height: 22px;
-    }
-}
-</style>
