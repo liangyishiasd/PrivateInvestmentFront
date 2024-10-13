@@ -29,7 +29,7 @@ const info = options => {
     creatorId: 'system',
     createTime: 1497160610259,
     deleted: 0,
-    permissions: [
+      permissions: [
       {
         roleId: 'admin',
         permissionId: 'dashboard',
@@ -64,7 +64,7 @@ const info = options => {
           }
         ],
         actionList: null,
-        dataAccess: null
+          dataAccess: null
       },
       {
         roleId: 'admin',
