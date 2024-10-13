@@ -10,6 +10,9 @@ export function getPatientList (parameter) {
   return request({
     url: patientApi.list,
     method: 'post',
-    params: parameter
+    headers: {
+      'Content-Type': 'application/json' // 设置请求头为 JSON
+    },
+    data: parameter
   })
 }

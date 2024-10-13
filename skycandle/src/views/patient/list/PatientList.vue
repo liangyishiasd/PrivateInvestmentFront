@@ -134,34 +134,30 @@ export default {
       queryParam: {},
       // 表头
       columns: [
+        // {
+        //   title: '#',
+        //   scopedSlots: { customRender: 'serial' }
+        // },
         {
-          title: '#',
-          scopedSlots: { customRender: 'serial' }
+          title: '姓名',
+          dataIndex: 'name'
         },
         {
-          title: '规则编号',
-          dataIndex: 'no'
+          title: '性别',
+          dataIndex: 'sex'
         },
         {
-          title: '描述',
-          dataIndex: 'description'
+          title: '年龄',
+          dataIndex: 'age'
+
         },
         {
-          title: '服务调用次数',
-          dataIndex: 'callNo',
-          sorter: true,
-          needTotal: true,
-          customRender: (text) => text + ' 次'
+          title: '电话',
+          dataIndex: 'phone'
         },
         {
-          title: '状态',
-          dataIndex: 'status',
-          needTotal: true
-        },
-        {
-          title: '更新时间',
-          dataIndex: 'updatedAt',
-          sorter: true
+          title: '地址',
+          dataIndex: 'address'
         },
         {
           title: '操作',
@@ -170,12 +166,13 @@ export default {
           scopedSlots: { customRender: 'action' }
         }
       ],
-      // 加载数据方法 必须为 Promise 对象
+      // 加载数据方法
       loadData: parameter => {
         console.log('loadData.parameter', parameter)
         return getPatientList(Object.assign(parameter, this.queryParam))
           .then(res => {
-            return res.result
+            console.log(res.data)
+            return res.data
           })
       },
       selectedRowKeys: [],
