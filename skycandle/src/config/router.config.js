@@ -290,6 +290,21 @@ export const asyncRouterMap = [
             meta: { title: 'list', keepAlive: true, permission: ['dashboard'] }
           }
             ]
+      },
+      {
+        path: '/med',
+        name: 'med',
+        component: RouteView,
+        redirect: '/med/list',
+        meta: { title: 'Med', icon: 'table', permission: ['table'] },
+        children: [
+          {
+            path: '/med/list',
+            name: 'MedList',
+            component: () => import('@/views/med/list/MedList'),
+            meta: { title: 'list', keepAlive: true, permission: ['dashboard'] }
+          }
+        ]
       }
 
       // other
