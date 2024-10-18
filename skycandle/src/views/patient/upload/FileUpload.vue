@@ -5,7 +5,7 @@
                     v-model="fileList"
                     name="file"
                     :multiple="true"
-                    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                    action="http://81.70.232.203:80/skycandle/api/common/fileUpload"
                     @change="handleChange"
                     @drop="handleDrop">
     <p class="ant-upload-drag-icon">
