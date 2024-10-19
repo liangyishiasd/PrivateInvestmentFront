@@ -124,7 +124,7 @@
 import moment from 'moment'
 import { STable } from '@/components'
 import { getRoleList } from '@/api/manage'
-import { getPatientList } from '@/api/patient'
+import { getMedList } from '@/api/med'
 import StandardList from '@/views/list/StandardList.vue'
 
 export default {
@@ -176,7 +176,7 @@ export default {
       // 加载数据方法
       loadData: parameter => {
         console.log('loadData.parameter', parameter)
-        return getPatientList(Object.assign(parameter, this.queryParam))
+        return getMedList(Object.assign(parameter, this.queryParam))
           .then(res => {
             console.log(res.data)
             return res.data
