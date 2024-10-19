@@ -3,7 +3,7 @@
 <template>
   <a-upload-dragger
                     v-model="fileList"
-                    name="file"
+                    name="files"
                     :multiple="true"
                     action="http://81.70.232.203:80/skycandle/api/common/fileUpload"
                     @change="handleChange"
@@ -38,6 +38,7 @@ export default {
       }
       if (status === 'done') {
         message.success(`${info.file.name} file uploaded successfully.`)
+        this.$router.push('/med/list?id=' + info.file.response.data)
       } else if (status === 'error') {
         message.error(`${info.file.name} file upload failed.`)
       }
